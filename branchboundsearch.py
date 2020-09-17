@@ -1,32 +1,10 @@
 import sys
 
-def search(data, start, goal):
+path = []
+pathcost = 0
 
-    parent = {}
-    cost = {start:0}
-    visited = []
-    level = {start:0}
-    bound_cost = sys.maxsize
-
-    while bool(level):
-        node = min(level, key=level.get)
-        level.pop(node, None)
-        visited.append(node)
-
-        if node is goal:
-            bound_cost = cost[goal]
-
-        for subnode,tcost in data[node].items():
-            if cost[node]+tcost > bound_cost:
-                continue
-                
-            if subnode in visited:
-                if cost[subnode] <= tcost:
-                    continue
-            cost[subnode] = cost[node] + tcost
-            level[subnode] = tcost
-            parent[subnode] = node
-    
+def save_path(start, goal, parent, cost):
+    global path, pathcost
     path = [goal]
     node = goal
 
@@ -36,9 +14,36 @@ def search(data, start, goal):
         if(node) is start:
             break
     path.reverse()
-    print(data)
-    print(parent)
-    print(cost)
+    pathcost = cost[goal]
 
 
-    return {'path': path, 'cost': cost[goal]}
+def search(data, start, goal):
+    parent = {}
+    cost = {start:0}
+    visited = []
+    level = [start]
+    bound_cost = sys.maxsize
+
+    while len(level):
+        node = level[0]
+        level.remove(node)
+        visited.append(node)
+
+        for subnode,tcost in data[node].items():
+            if (cost[node] + tcost) >= bound_cost:
+                continue
+            if subnode in visited:
+                if (cost[node] + tcost) >= cost[subnode]:
+                    continue
+
+            cost[subnode] = cost[node] + tcost
+            parent[subnode] = node
+            if subnode is goal:
+                bound_cost = cost[subnode]
+                save_path(start, goal, parent, cost)
+                continue
+
+            level.append(subnode)
+
+
+    return {'path': path, 'cost': pathcost}
